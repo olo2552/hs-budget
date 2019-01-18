@@ -1,0 +1,29 @@
+{
+  "name": "hapi-starter-kit",
+  "version": "2.0.0",
+  "description": "Hackerspace budget Aggregator",
+  "author": "Aleksander Wielgorski",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/olo2552/hs-budget"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "axios": "0.18.0",
+    "boom": "7.3.0",
+    "config": "3.0.1",
+    "dotenv": "^6.2.0",
+    "googleapis": "^36.0.0",
+    "hapi": "17.8.1",
+    "hapi-swagger": "9.3.0",
+    "http-status": "1.3.1",
+    "lodash": "4.17.11"
+  },
+  "devDependencies": {
+    "nodemon": "1.18.9"
+  }
+}
