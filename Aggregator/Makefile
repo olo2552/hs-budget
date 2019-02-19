@@ -13,15 +13,19 @@ serve: env db.sqlite3 ## start the server in development mode
 #	docker build -t buxfer_connector .
 
 
-.PHONY: clear_db venv
-clear_db: ## remove everything from database
+
+.PHONY: clear-db venv
+clear-db: ## remove everything from database
 	rm db.sqlite3
+create-superuser: db.sqlite3 ## create Django superuser (username: admin, pass: admin)
+	$(WITH_VENV) $(PWD)/scripts/create-admin-admin
 
 env: requirements.txt
 	test -f $(PWD)/env && true || python3 -m venv env
 	$(WITH_VENV) pip install -r requirements.txt
 db.sqlite3: env $(PWD)/main/migrations
 	$(MANAGE_PY) migrate
+	touch $(PWD)/db.sqlite3
 
 .PHONY: help
 help: ## print this message

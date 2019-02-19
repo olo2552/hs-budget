@@ -1,0 +1,17 @@
+#!/usr/bin/expect
+
+spawn python ./manage.py createsuperuser --username admin
+
+expect "Email address:"
+send "\r"
+
+expect "Password"
+send "admin\r"
+
+expect "Password (again):"
+send "admin\r"
+
+expect "Bypass password validation and create user anyway?"
+send "y\r"
+
+expect "Superuser created successfully."
