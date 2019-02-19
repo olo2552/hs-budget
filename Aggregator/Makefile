@@ -4,17 +4,24 @@ PWD := .
 PORT := 8080
 WITH_VENV := . $(PWD)/env/bin/activate && 
 
+MANAGE_PY := $(WITH_VENV) python $(PWD)/manage.py
+
 .PHONY: serve docker
-serve: env ## start the server in development mode
-	$(WITH_VENV) python $(PWD)/manage.py runserver 0.0.0.0:$(PORT)
+serve: env db.sqlite3 ## start the server in development mode
+	$(MANAGE_PY) runserver 0.0.0.0:$(PORT)
 #docker:
 #	docker build -t buxfer_connector .
 
 
+.PHONY: clear_db venv
+clear_db: ## remove everything from database
+	rm db.sqlite3
+
 env: requirements.txt
 	test -f $(PWD)/env && true || python3 -m venv env
 	$(WITH_VENV) pip install -r requirements.txt
-	
+db.sqlite3: env $(PWD)/main/migrations
+	$(MANAGE_PY) migrate
 
 .PHONY: help
 help: ## print this message
