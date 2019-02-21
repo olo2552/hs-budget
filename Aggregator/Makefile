@@ -23,16 +23,17 @@ clear-db: ## remove everything from the database
 
 create-superuser: db.sqlite3 ## create Django superuser
 	# TODO: Make this idempotent and add to `serve` prerequisites
-	# TODO: Maybe rewrite it with PyExpect? o.0 :D
-	$(WITH_VENV) expect $(PWD)/scripts/create-django-superuser $(MANAGE_PY) $(USERNAME) $(PASSWORD)
+	$(WITH_VENV) python $(PWD)/scripts/create-django-superuser.py $(MANAGE_PY) $(USERNAME) $(PASSWORD)
 
 open-browser:
 	(sleep 1; xdg-open localhost:$(PORT)/admin) &
 
 
-env: requirements.txt
+env: requirements.txt dev-requirements.txt
 	test -f $(PWD)/env && true || python3 -m venv env
 	$(WITH_VENV) pip install -r requirements.txt
+	$(WITH_VENV) pip install -r dev-requirements.txt
+	touch env
 db.sqlite3: env $(PWD)/main/migrations
 	$(VENV_MANAGE_PY) migrate
 	touch $(PWD)/db.sqlite3
