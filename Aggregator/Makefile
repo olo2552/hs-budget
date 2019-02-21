@@ -11,7 +11,7 @@ VENV_MANAGE_PY := $(WITH_VENV) $(MANAGE_PY)
 
 
 .PHONY: serve docker
-serve: env db.sqlite3 open-browser ## start the server in development mode
+serve: env db.sqlite3 create-superuser open-browser ## start the server in development mode
 	$(VENV_MANAGE_PY) runserver 0.0.0.0:$(PORT)
 #docker:
 #	docker build -t buxfer_connector .
@@ -22,7 +22,6 @@ clear-db: ## remove everything from the database
 	rm db.sqlite3
 
 create-superuser: db.sqlite3 ## create Django superuser
-	# TODO: Make this idempotent and add to `serve` prerequisites
 	$(WITH_VENV) python $(PWD)/scripts/create-django-superuser.py $(MANAGE_PY) $(USERNAME) $(PASSWORD)
 
 open-browser:
