@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from decimal import getcontext, Decimal
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from main.models import Income, Expense
@@ -16,7 +16,7 @@ def format_datetime(dt):
     return datetime.strftime(dt, "%Y-%m-%dT%H:%M:%S%z")
 
 
-def create_object(raw_payload, obj):
+def create_object(raw_payload, obj_cls):
     payload = json.loads(raw_payload.decode("utf-8"))
 
     getcontext().prec = 2
@@ -24,7 +24,7 @@ def create_object(raw_payload, obj):
     payload["when"] = parse_datetime_string(payload["when"])
 
     # create object and save
-    o = obj(**payload) 
+    o = obj_cls(**payload)
     o.save()
 
 
@@ -49,9 +49,17 @@ def show(request, raw_timeframe_start, raw_timeframe_end):
         return HttpResponse("""Those are not the droids you're looking for
         but really..., one of your timeframe boundaries is malformed""", status=404)
 
-    # TODO: query data
-    expenses = ()
-    incomes = ()
+    def get_objects_within_timeframe(obj_cls):
+        return obj_cls.objects.all().filter(when__gte=timeframe_start, when__lte=timeframe_end)
+
+    def serialize(obj):
+        return obj.to_json()
+
+    def serialize_objects(objects):
+        return list(map(serialize, objects))
+
+    expenses = serialize_objects(get_objects_within_timeframe(Expense))
+    incomes = serialize_objects(get_objects_within_timeframe(Income))
 
     data = {
         "expenses": expenses,
@@ -63,4 +71,4 @@ def show(request, raw_timeframe_start, raw_timeframe_end):
             },
     }
 
-    return HttpResponse(json.dumps(data), status=200)
+    return JsonResponse(data, status=200)
