@@ -11,8 +11,8 @@ MANAGE_PY := python $(PWD)/manage.py
 VENV_MANAGE_PY := $(WITH_VENV) $(MANAGE_PY)
 
 
-.PHONY: serve docker serve-container gunicorn-serve clear-db 
-serve: env db.sqlite3 create-superuser open-browser ## start the server in development mode
+.PHONY: serve docker docker-utils serve-container gunicorn-serve clear-db migrate
+serve: env data/db.sqlite3 create-superuser open-browser ## start the server in development mode
 	$(VENV_MANAGE_PY) runserver 0.0.0.0:$(PORT)
 
 serve-container: docker open-browser ## start the server in a production-grade container
@@ -20,16 +20,18 @@ serve-container: docker open-browser ## start the server in a production-grade c
 
 docker: ## build Docker container
 	docker build -t $(DOCKER_TAG) -f $(PWD)/deployment/Dockerfile .
+docker-utils: ## build Docker container with management tools
+	docker build -t $(DOCKER_TAG)-utils -f $(PWD)/deployment/Dockerfile.utils .
 
-#gunicorn-serve: env db.sqlite3 create-superuser open-browser ## run the app via Gunicorn locally
+#gunicorn-serve: env data/db.sqlite3 create-superuser open-browser ## run the app via Gunicorn locally
 #	$(WITH_VENV) $(PWD)/scripts/entrypoint
 
 clear-db: ## remove everything from the database
-	rm db.sqlite3
+	rm data/db.sqlite3
 
 
 .PHONY: create-superuser open-browser
-create-superuser: db.sqlite3 ## create Django superuser
+create-superuser: data/db.sqlite3 ## create Django superuser
 	$(WITH_VENV) python $(PWD)/scripts/create-django-superuser.py $(MANAGE_PY) $(USERNAME) $(PASSWORD)
 
 open-browser:
@@ -41,9 +43,10 @@ env: requirements.txt dev-requirements.txt
 	$(WITH_VENV) pip install -r requirements.txt
 	$(WITH_VENV) pip install -r dev-requirements.txt
 	touch env
-db.sqlite3: env $(PWD)/main/migrations
+data/db.sqlite3: env $(PWD)/main/migrations
+	mkdir -p data
 	$(VENV_MANAGE_PY) migrate
-	touch $(PWD)/db.sqlite3
+	touch $(PWD)/data/db.sqlite3
 
 
 .PHONY: help

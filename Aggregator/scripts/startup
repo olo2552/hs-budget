@@ -1,0 +1,5 @@
+#!/bin/sh
+make env --touch
+make data/db.sqlite3 WITH_VENV=''
+
+exec python manage.py runserver 0.0.0.0:8080

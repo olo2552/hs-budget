@@ -1,0 +1,2 @@
+# adds adminadmin
+docker-compose exec aggregator make create-superuser WITH_VENV=''
