@@ -4,28 +4,36 @@ PWD := .
 PORT := 8080
 USERNAME := admin
 PASSWORD := admin
+DOCKER_TAG := hs-budget-aggregator
 
 WITH_VENV := . $(PWD)/env/bin/activate && 
 MANAGE_PY := python $(PWD)/manage.py
 VENV_MANAGE_PY := $(WITH_VENV) $(MANAGE_PY)
 
 
-.PHONY: serve docker
+.PHONY: serve docker serve-container gunicorn-serve clear-db 
 serve: env db.sqlite3 create-superuser open-browser ## start the server in development mode
 	$(VENV_MANAGE_PY) runserver 0.0.0.0:$(PORT)
-#docker:
-#	docker build -t buxfer_connector .
 
+serve-container: docker open-browser ## start the server in a production-grade container
+	docker run --rm -p $(PORT):8080 $(DOCKER_FLAGS) $(DOCKER_TAG) $(DOCKER_CMD)
 
-.PHONY: clear-db create-superuser open-browser
+docker: ## build Docker container
+	docker build -t $(DOCKER_TAG) -f $(PWD)/deployment/Dockerfile .
+
+#gunicorn-serve: env db.sqlite3 create-superuser open-browser ## run the app via Gunicorn locally
+#	$(WITH_VENV) $(PWD)/scripts/entrypoint
+
 clear-db: ## remove everything from the database
 	rm db.sqlite3
 
+
+.PHONY: create-superuser open-browser
 create-superuser: db.sqlite3 ## create Django superuser
 	$(WITH_VENV) python $(PWD)/scripts/create-django-superuser.py $(MANAGE_PY) $(USERNAME) $(PASSWORD)
 
 open-browser:
-	(sleep 1; xdg-open localhost:$(PORT)/admin) &
+	(sleep 2; xdg-open localhost:$(PORT)/admin) &
 
 
 env: requirements.txt dev-requirements.txt
